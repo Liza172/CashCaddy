@@ -1,7 +1,7 @@
 "use client"
 
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from './ui/drawer'
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -10,10 +10,11 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Switch } from './ui/switch';
 import { Button } from './ui/button';
-import useFetch from '@/app/hooks/useFetch';
 import { Loader2 } from 'lucide-react';
 
 import createAccount from '@/actions/dashboard'
+import useFetch from '@/hooks/useFetch';
+import { toast } from 'sonner';
 
 
 function CreateAccountDrawer({children}) {
@@ -28,11 +29,30 @@ function CreateAccountDrawer({children}) {
     }
   })
 
- const {data: newAccount, error, fn : createAccountFn, loading:createAccountLoading} = useFetch(createAccount);
+  const {data: newAccount, error, fn : createAccountFn, loading:createAccountLoading} = useFetch(createAccount);
+
+  useEffect(()=>
+  {
+    if(newAccount && !createAccountLoading)
+    {
+      toast.success("Account created successfully");
+      reset();
+      setOpen(false);
+    }
+  }, [createAccountLoading, newAccount]);
+  useEffect(()=>
+  {
+    if(error)
+    {
+      toast.error(error.message || "Failed to creatae acoount");
+    }
+  }, [error])
   const onSubmit = async (data) =>
   {
     await createAccountFn(data);
   }
+
+  
   return (
     <Drawer open = {open} onOpenChange= {setOpen}>
     <DrawerTrigger asChild>{children}</DrawerTrigger>
@@ -81,7 +101,7 @@ function CreateAccountDrawer({children}) {
             </div>
             <Switch 
             id="isDefault" 
-            onCheckChange = {(checked) => setValue("isDefault", checked)}
+            onCheckedChange = {(checked) => setValue("isDefault", checked)}
             checked = {watch("isDefault")}
             />
           </div>
@@ -89,7 +109,7 @@ function CreateAccountDrawer({children}) {
             <DrawerClose asChild>
               <Button type="button" variant="outline" className="flex-1">Cancel</Button>
             </DrawerClose>
-            <Button className="flex-1" type="submit">{createAccountLoading ? (<><Loader2 className='mr-2 h-4 w-4 animate-spin'/> Creating...</> ): ("Create Account")}</Button>
+            <Button className="flex-1" type="submit" disabled = {createAccountLoading}>{createAccountLoading ? (<><Loader2 className='mr-2 h-4 w-4 animate-spin'/> Creating...</> ): ("Create Account")}</Button>
           </div>
           
         </form>

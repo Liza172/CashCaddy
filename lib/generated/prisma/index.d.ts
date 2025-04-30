@@ -39,7 +39,7 @@ export type Budget = $Result.DefaultSelection<Prisma.$BudgetPayload>
  */
 export namespace $Enums {
   export const AccountType: {
-  SAVING: 'SAVING',
+  SAVINGS: 'SAVINGS',
   CURRENT: 'CURRENT'
 };
 

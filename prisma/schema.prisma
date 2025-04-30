@@ -47,7 +47,7 @@ model Account {
 }
 
 enum AccountType {
-  SAVING
+  SAVINGS
   CURRENT 
 }
 
