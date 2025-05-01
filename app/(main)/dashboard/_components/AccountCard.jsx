@@ -37,7 +37,7 @@ function AccountCard({account}) {
       toast.success("Default account updated successfully")
     }
   }, [updatedAccount, updateDefaultLoading])
-
+  
   useEffect(()=>
   {
     if(error)
