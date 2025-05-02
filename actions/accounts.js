@@ -81,3 +81,69 @@ import {revalidatePath} from 'next/cache'
       transactions:account.transactions.map(serializeTransaction)
     }
   }
+
+  export async function bulkDeleteTransactions(transactionsIds)
+  {
+    try 
+    {
+      const {userId} = await auth();
+      if(!userId)
+        throw new Error("Unauthorized");
+      const user = await db.user.findUnique({
+        where : {clerkUserId: userId}
+      });
+      if(!user)
+      {
+        throw new Error("User not found");
+      }
+      const transactions = await db.transactions.fildMany({
+        where : {
+          id: {in : transactionsIds},
+          userId: user.id
+
+        },
+      });
+      const accountBalanceChanges = transactions.reduce((acc, transactions) =>
+      {
+        const amount = parseFloat(transactions.amount);
+            if (isNaN(amount)) return acc;
+
+            const change = transactions.type === "EXPENSE"
+                ? amount
+                : -amount;
+
+            acc[transactions.accountId] = (acc[transactions.accountId] || 0) + change;
+            return acc;
+      }, {});
+      //Delete transaction and update account balances in a transaction
+      await db.$transactions(async (tx) =>
+      {
+        //Delete
+        await tx.transactions.deleteMany({
+          where : {
+            id: {in : transactionsIds},
+            userId: user.id,
+          }
+        })
+      
+      for(const [accountId, balanceChange] of Object.entries(
+        accountBalanceChanges
+      )){
+        await tx.account.update({
+          where : {id:accountId},
+          data : {
+            balance : {
+              increment : balanceChange,
+            },
+          },
+        });
+      }
+    });
+    revalidatePath("/dashboard");
+    revalidatePath("/account/[id]");
+    return {succeess : true};
+    }catch(error)
+    {
+      return {success : false, error : error.message};
+    }
+  }

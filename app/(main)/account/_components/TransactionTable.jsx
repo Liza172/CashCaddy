@@ -2,18 +2,20 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { format } from 'date-fns';
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { categoryColors } from '@/data/categories';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, Clock, MoreHorizontal, MoreHorizontalIcon, RefreshCcw, RefreshCw, Search, Trash } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, MoreHorizontal, MoreHorizontalIcon, RefreshCcw, RefreshCw, Search, Trash, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
-import { SelectContent, SelectTrigger, SelectValue } from '@radix-ui/react-select';
-import { Select, SelectItem } from '@/components/ui/select';
-
+import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useFetch from '@/hooks/useFetch';
+import { bulkDeleteTransactions } from '@/actions/accounts';
+import { BarLoader } from 'react-spinners';
+import { toast } from 'sonner';
 
 const RECURRING_INTERVALS = {
   DAILY : "Daily",
@@ -21,7 +23,6 @@ const RECURRING_INTERVALS = {
   MONTHLY : "Monthly",
   YEARLY : "Yearly"
 }
-
 function TransactionTable({transactions}) {
 const router = useRouter();
 // const filteredAndSortedTransactions = transactions;
@@ -34,6 +35,13 @@ const [sortConfig, setSortConfig] = useState({
 const [searchTerm, setSearchTerm] = useState("");
 const [typeFilter, setTypeFilter] = useState("");
 const [recurringFilter, setRecurringFilter] = useState("");
+
+const {
+  loading : deleteLoading,
+  fn : deleteFn,
+  data : deleted,
+} = useFetch(bulkDeleteTransactions)
+
 
 const handleSort = (field) =>
 {
@@ -52,6 +60,7 @@ if(searchTerm)
       transactions.description?.toLowerCase().includes(searchLower)
     );
 }
+//Apply recurring filter
 if(recurringFilter)
 {
       result = result.filter((transactions)=>
@@ -61,6 +70,32 @@ if(recurringFilter)
         return !transactions.isReccuring;
       });   
 }
+//Apply type filter
+if(typeFilter)
+{
+  result = result.filter((transactions) => transactions.type === typeFilter);
+}
+//Apply sorting 
+
+result.sort((a, b) =>
+{
+  let comparison = 0
+  switch (sortConfig.field)
+  {
+    case "date" :
+        comparison = new Date(a.date) - new Date(b.date);
+        break;
+    case "amount" :
+        comparison = a.amount - b.amount;
+        break;
+    case "category" :
+        comparison = a.category.localeCompare(b.category);
+        break;
+    default :
+        comparison = 0;
+  }
+  return sortConfig.direction === "asc" ? comparison : -comparison;
+})
 
   return result;
 }, [transactions,
@@ -84,10 +119,23 @@ const handleSelectAll = () =>
 
     })
   };
-const handleBulkDelete = () =>
-{
-
-};
+  const handleBulkDelete = async () => {
+    if(
+      !window.confirm (
+        `Are you sure you want to delete ${selectedIds.length} transactions ?`
+      )
+    ){
+      return ;
+    }
+    deleteFn(selectedIds)
+  }
+  useEffect(()=>
+  {
+    if(deleted && !deleteLoading)
+    {
+      toast.error("Transactions deleted successfully")
+    }
+  }, [deleted, deleteLoading])
 const handleClearFilters = () =>
 {
   setSearchTerm("");
@@ -96,7 +144,9 @@ const handleClearFilters = () =>
   setSelectedIds([]);
 };
   return (
+    
     <div className='space-y-4'>
+      {deleteLoading && <BarLoader className="mt-4" width={"100%"} color='#9333ea'/>}
       {/*Filters */}
       <div className='flex flex-col sm:flex-row gap-4'>
         <div className='relative flex-1'>
@@ -220,7 +270,7 @@ const handleClearFilters = () =>
 
                 <TableCell className="text-right font-medium"
                 style = {{
-                  color : transactions.type === "EXPENESE" ? "red" : "green", 
+                  color : transactions.type === "EXPENSE" ? "red" : "green", 
                 }}>
                   {transactions.type === "EXPENSE" ? "-" : "+"}
                   ${transactions.amount.toFixed(2)}
@@ -257,18 +307,19 @@ const handleClearFilters = () =>
                         <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontalIcon className="h-4 w-4"/></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuLabel
+                        <DropdownMenuItem
                         onClick = {() =>
                         {
                           router.push(`/transaction/create?edit = ${transactions.id}`)
                         }
                         }
                         >
-                          Edit</DropdownMenuLabel>
+                          Edit
+                          </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive" 
-                          // onClick={()=> deleteFn[transactions.id]}
+                          onClick={()=> deleteFn[transactions.id]}
                         >Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
