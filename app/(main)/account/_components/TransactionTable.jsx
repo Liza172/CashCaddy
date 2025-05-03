@@ -128,6 +128,7 @@ const handleSelectAll = () =>
       return ;
     }
     deleteFn(selectedIds)
+    setSelectedIds([]);
   }
   useEffect(()=>
   {
@@ -195,7 +196,7 @@ const handleClearFilters = () =>
                 size="icon" 
                 onClick = {handleClearFilters} 
                 title="Clear Filters">
-                  <X className="h04 w-5" />
+                  <X className="h-4 w-5" />
               </Button>
             )}
         </div>
@@ -310,7 +311,7 @@ const handleClearFilters = () =>
                         <DropdownMenuItem
                         onClick = {() =>
                         {
-                          router.push(`/transaction/create?edit = ${transactions.id}`)
+                          router.push(`/transaction/create?edit=${transactions.id}`)
                         }
                         }
                         >
@@ -319,7 +320,7 @@ const handleClearFilters = () =>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive" 
-                          onClick={()=> deleteFn[transactions.id]}
+                          onClick={()=> deleteFn([transactions.id])}
                         >Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

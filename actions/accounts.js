@@ -96,7 +96,7 @@ import {revalidatePath} from 'next/cache'
       {
         throw new Error("User not found");
       }
-      const transactions = await db.transactions.fildMany({
+      const transactions = await db.transaction.findMany({
         where : {
           id: {in : transactionsIds},
           userId: user.id
@@ -116,10 +116,10 @@ import {revalidatePath} from 'next/cache'
             return acc;
       }, {});
       //Delete transaction and update account balances in a transaction
-      await db.$transactions(async (tx) =>
+      await db.$transaction(async (tx) =>
       {
         //Delete
-        await tx.transactions.deleteMany({
+        await tx.transaction.deleteMany({
           where : {
             id: {in : transactionsIds},
             userId: user.id,
@@ -141,7 +141,7 @@ import {revalidatePath} from 'next/cache'
     });
     revalidatePath("/dashboard");
     revalidatePath("/account/[id]");
-    return {succeess : true};
+    return {success : true};
     }catch(error)
     {
       return {success : false, error : error.message};
