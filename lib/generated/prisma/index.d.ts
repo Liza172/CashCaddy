@@ -5880,16 +5880,16 @@ export namespace Prisma {
 
   export type BudgetWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    userId?: string
     AND?: BudgetWhereInput | BudgetWhereInput[]
     OR?: BudgetWhereInput[]
     NOT?: BudgetWhereInput | BudgetWhereInput[]
     amount?: DecimalFilter<"Budget"> | Decimal | DecimalJsLike | number | string
     lastAlertSent?: DateTimeNullableFilter<"Budget"> | Date | string | null
-    userId?: StringFilter<"Budget"> | string
     createdAt?: DateTimeFilter<"Budget"> | Date | string
     updatedAt?: DateTimeFilter<"Budget"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
+  }, "id" | "userId">
 
   export type BudgetOrderByWithAggregationInput = {
     id?: SortOrder

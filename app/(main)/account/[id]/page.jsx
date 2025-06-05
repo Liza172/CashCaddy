@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import React, { Suspense } from 'react'
 import TransactionTable from '../_components/TransactionTable';
 import { BarLoader } from 'react-spinners';
-import AccountChart from '../../dashboard/_components/AccountChart';
+import AccountChart from '../_components/AccountChart';
 
 async function AccountsPage({params}) {
   const accountData = await getAccountWithTransactions(params.id)

@@ -1,6 +1,6 @@
 "use client"
 import { Checkbox } from '@/components/ui/checkbox'
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { format } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react'
 import { categoryColors } from '@/data/categories';

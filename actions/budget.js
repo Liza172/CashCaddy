@@ -26,28 +26,30 @@ import { revalidatePath } from "next/cache";
       const currentDate = new Date();
       const startOfMonth = new Date(
         currentDate.getFullYear(),
-        currentDate.getMonth(),
+        currentDate.getMonth() - 1,
         1
       );
       const endOfMonth = new Date(
         currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
+        currentDate.getMonth(),
         0
       );
+
       const expenses = await db.transaction.aggregate({
-        where : {
-          userId : user.id,
-          type : "EXPENSE",
-          dtae : {
-            gte : startOfMonth,
-            lte : endOfMonth,
-          },
-          accountId
+      where: {
+        userId: user.id,
+        type: "EXPENSE",
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
         },
-        _sum:{
-          amount : true,
-        }
-      });
+        accountId,
+      },
+      _sum: {
+        amount: true,
+      },
+    });
+    
       return {
         budget : budget ? {...budget, amount: budget.amount.toNumber()} : null,
         currentExpenses : expenses._sum.amount
