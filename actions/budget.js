@@ -26,12 +26,12 @@ import { revalidatePath } from "next/cache";
       const currentDate = new Date();
       const startOfMonth = new Date(
         currentDate.getFullYear(),
-        currentDate.getMonth() - 1,
+        currentDate.getMonth(),
         1
       );
       const endOfMonth = new Date(
         currentDate.getFullYear(),
-        currentDate.getMonth(),
+        currentDate.getMonth() + 1,
         0
       );
 
