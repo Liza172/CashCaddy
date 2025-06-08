@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import useFetch from '@/hooks/useFetch';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
 import {CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
@@ -20,11 +21,11 @@ const AddTransactionForm = ({accounts, categories}) =>
   const router = useRouter();
   const {register, setValue, handleSubmit, formState:{errors}, watch, getValues, reset} = useForm({
     resolver : zodResolver(transactionSchema),
-    defaulValues : {
+    defaultValues : {
       type : "EXPENSE",
       amount : "",
       description : "",
-      accountId : accounts.find((ac) => ac.isdefault) ?.id,
+      accountId : accounts.find((ac) => ac.isDefault) ?.id,
       date : new Date(),
       isReccuring: false,
     },
@@ -45,6 +46,7 @@ const AddTransactionForm = ({accounts, categories}) =>
       ...data,
       amount : parseFloat(data.amount),
     };
+    console.log(formData);
     transactionFn(formData);
   }
   useEffect(() => {
@@ -60,14 +62,13 @@ const AddTransactionForm = ({accounts, categories}) =>
   const filteredCategories = categories.filter(
     (category) => category.type === type
   );
-
   return (
-  <form className='space-y-6' onSumbit={handleSubmit(onSubmit)}>
+  <form className='space-y-6' onSubmit={handleSubmit(onSubmit)}>
       {/*AI Receipt Scanner */}
       <div className='space-y-2'>
         <label className='text-sm font-medium'>Type</label>
         <Select 
-          onvalueChange = {(value) => setValue("type", value)}
+          onValueChange = {(value) => setValue("type", value)}
           defaultValue = {type}
         >
         <SelectTrigger className="w-full">
@@ -102,7 +103,7 @@ const AddTransactionForm = ({accounts, categories}) =>
        <div className='space-y-2'>
         <label className='text-sm font-medium'>Account</label>
         <Select 
-          onvalueChange = {(value) => setValue("accountId", value)}
+          onValueChange = {(value) => setValue("accountId", value)}
           defaultValue = {getValues("accountId")}
         >
         <SelectTrigger className="w-full">
@@ -121,14 +122,14 @@ const AddTransactionForm = ({accounts, categories}) =>
       </Select>
 
       {errors.accountId && (
-        <p className="text-sm text-red-500">{errors.type.message}</p>
+        <p className="text-sm text-red-500">{errors.accountId.message}</p>
       )}
       </div>
     </div>
       <div className='space-y-2'>
         <label className='text-sm font-medium'>Category</label>
         <Select 
-          onvalueChange = {(value) => setValue("category", value)}
+          onValueChange = {(value) => setValue("category", value)}
           defaultValue = {getValues("category")}
         >
         <SelectTrigger className="w-full">
@@ -145,7 +146,7 @@ const AddTransactionForm = ({accounts, categories}) =>
       </Select>
 
       {errors.category && (
-        <p className="text-sm text-red-500">{errors.type.message}</p>
+        <p className="text-sm text-red-500">{errors.category.message}</p>
       )}
       </div>
     
@@ -167,8 +168,8 @@ const AddTransactionForm = ({accounts, categories}) =>
         </PopoverContent>
       </Popover>
 
-      {errors.category && (
-        <p className="text-sm text-red-500">{errors.type.message}</p>
+      {errors.date && (
+        <p className="text-sm text-red-500">{errors.date.message}</p>
       )}
     </div>
       <div className='space-y-2'>
@@ -201,7 +202,7 @@ const AddTransactionForm = ({accounts, categories}) =>
         <div className='space-y-2'>
           <label className='text-sm font-medium'>Recurring Interval</label>
           <Select 
-              onvalueChange = {(value) => setValue("recurringInterval",value)}
+              onValueChange = {(value) => setValue("recurringInterval",value)}
               defaultValue = {getValues("recurringInterval")}
             >
             <SelectTrigger>
