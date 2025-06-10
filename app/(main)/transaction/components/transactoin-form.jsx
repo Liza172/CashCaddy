@@ -15,6 +15,7 @@ import {CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 const AddTransactionForm = ({accounts, categories}) => 
 {
@@ -130,7 +131,7 @@ const AddTransactionForm = ({accounts, categories}) =>
         <label className='text-sm font-medium'>Category</label>
         <Select 
           onValueChange = {(value) => setValue("category", value)}
-          defaultValue = {getValues("category")}
+          defaultValue = {watch("category")}
         >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select category" />
@@ -202,8 +203,8 @@ const AddTransactionForm = ({accounts, categories}) =>
         <div className='space-y-2'>
           <label className='text-sm font-medium'>Recurring Interval</label>
           <Select 
-              onValueChange = {(value) => setValue("recurringInterval",value)}
-              defaultValue = {getValues("recurringInterval")}
+              onValueChange = {(value) => setValue("reccuringInterval",value)}
+              defaultValue = {getValues("reccuringInterval")}
             >
             <SelectTrigger>
               <SelectValue placeholder="Select Interval" />

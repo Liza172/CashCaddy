@@ -1,7 +1,9 @@
 "use server"
 
+import aj from "@/lib/arcjet";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { defaultInngestApiBaseUrl } from "inngest/helpers/consts";
 import { revalidatePath } from "next/cache";
 
 const serializeAmount = (obj) =>({
@@ -13,10 +15,33 @@ export async function createTransaction(data)
 {
   try{
     const {userId} = await auth();
-    if(!userId)
+    if(!userId) throw new Error("Unauthorized");
 
-        throw new Error("Unauthorized");
     //Arject to add rate limiting
+
+    const req = await request();
+    const decision = await aj.protect(req, {
+      userId,
+      requested: 1,
+    });
+    if(decision.isDenied())
+    {
+      if(decision.reason.isRateLimit())
+      {
+        const {remaining, reset} = decision.reason;
+
+        console.error({
+          code : "RATE_LIMIT_EXCEEDED", 
+          details : {
+            remaining, 
+            resetInSeconds : reset,
+          }
+        })
+
+        throw new Error("Too many request. Please try again later.");
+      }
+      throw new Error("Request Blocked");
+    }
 
     const user = await db.user.findUnique({
       where : {clerkUserId : userId},
@@ -46,13 +71,13 @@ export async function createTransaction(data)
           ...data,
           userId: user.id,
           nextRecurringDate: data.isReccuring && data.reccuringInterval
-          ? calculatenextRecurringDate(data.data, data.reccuringInterval)
+          ? calculatenextRecurringDate(data.date, data.reccuringInterval)
           : null,
         }
       })
 
       await tx.account.update({
-        where : {id: date.accountId},
+        where : {id: data.accountId},
         data : {balance: newBalance},
       });
       return newTransaction;
@@ -81,7 +106,7 @@ function calculatenextRecurringDate(startDate, interval)
       date.setDate(date.getDate() + 7);
       break;
     case "MONTHLY" :
-      date.setDate(date.getDate() + 1);
+      date.setMonth(date.getMonth() + 1);
       break;
     case "YEARLY" :
       date.setFullYear(date.getFullYear() + 1);
