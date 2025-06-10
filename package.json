@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@arcjet/next": "^1.0.0-beta.8",
+    "@bufbuild/protobuf": "^1.4.0",
     "@clerk/nextjs": "^6.18.0",
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.0.1",
     "@opentelemetry/api": "^1.9.0",
     "@prisma/client": "^6.0.1",
@@ -27,7 +29,7 @@
     "@react-email/components": "0.0.41",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
+    "date-fns": "^3.6.0",
     "inngest": "^3.38.0",
     "lucide-react": "^0.503.0",
     "next": "15.3.1",
