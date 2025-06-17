@@ -2,14 +2,83 @@ import { Body, Button, Container, Head, Heading, Html, Preview, Section, Text } 
 import * as React from "react";
 
 export default function EmailTemplate({
-  userName = "",
+  userName = "Liza",
   type = "budget-alert",
-  data = {
-  }}
+  data = {}
+}
 ) {
     if(type == "monthly-report")
     {
+      return (
+      <Html>
+        <Head/>
+        <Preview>Your Monthly Financial Report</Preview>
+        <Body style = {styles.body}>
+          <Container style={styles.container}>
+            <Heading style={styles.title}>Monthly Financial Report</Heading>
 
+            <Text style={styles.text}>Hello {userName}</Text>
+            <Text style={styles.text}>
+              Here&rsquo;s your financial summary for {data?.month};
+            </Text>
+            {/* Main Stats */}
+
+            <Section style={styles.statsContainer}>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Total Income</Text>
+                <Text style={styles.text}>
+                    ${data?.stats.totalIncome};
+                </Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Total Expense</Text>
+                <Text style={styles.text}>
+                    ${data?.stats.totalExpenses};
+                </Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Net</Text>
+                <Text style={styles.text}>
+                    ${data?.stats.totalIncome - data?.stats.totalExpenses};
+                </Text>
+              </div>
+            </Section>
+
+            {/* Category Breakdown */}
+            {data?.stats?.byCategory && (
+              <Section style={styles.section}>
+                <Heading style={styles.heading}>Expenses by Category</Heading>
+                {Object.entries(data?.stats.byCategory).map(
+                  ([category, amount])=> (
+                    <div key = {category} style = {styles.row}>
+                        <Text style={styles.text}>{category}</Text>
+                        <Text style={styles.text}>${amount}</Text>
+
+                    </div>
+                  )
+                )}
+              </Section>
+            )}
+
+            {/* AI Insights */}
+
+            {data?.insights && (
+              <Section style={styles.section}>
+                <Heading style={styles.heading}>CashCaddy Insights</Heading>
+                {data?.insights.map((insights, index)=> (
+                    <Text key = {index} style={styles.text}>. {insights}</Text>
+                  )
+                )}
+              </Section>
+            )}
+
+            <Text style={styles.footer}>
+              Thank You for usong CashCaddy. Keep tracking your finances for better financial helth!
+            </Text>
+          </Container>
+        </Body>
+      </Html>
+      )
     }
     if(type == "budget-alert")
     {
@@ -17,7 +86,7 @@ export default function EmailTemplate({
         <Html>
           <Head/>
           <Preview>Budget Alert</Preview>
-          <Body style={styles.body}>
+          <Body style = {styles.body}>
             <Container style = {styles.container}>
               <Heading style = {styles.title}>Budget Alert</Heading>
               <Text style = {styles.text}>Hello{userName},</Text>
@@ -87,5 +156,17 @@ const styles = {
     backgroundColor: "#fff",
     borderRadius : "4px",
     boxShadow : "0 1px 2px rgba(0, 0, 0, 0.05)"
+  },
+  section : {
+    marginTop : "32px",
+    padding : "20px",
+    backgroundColor : "#f9fafb",
+    border : "1px solid #e5e7eb"
+  },
+  row : {
+    display: "flex",
+    justifyContent : "space-between",
+    padding : "12px 0",
+    borderBottom : "1px solid #e5e7eb",
   }
 }

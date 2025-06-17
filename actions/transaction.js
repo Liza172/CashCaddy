@@ -11,6 +11,8 @@ import { array, date } from "zod";
 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+
+
 const serializeAmount = (obj) =>({
   ...obj,
   amount: obj.amount.toNumber(),
@@ -97,7 +99,7 @@ export async function createTransaction(data)
     throw new Error(error.message);
   }
 }
-
+// Calculate next recurring date
 function calculatenextRecurringDate(startDate, interval)
 {
   const date = new Date(startDate);
@@ -154,7 +156,7 @@ export async function scanReceipt(file)
     const result = await model.generateContent([
       {
         inlineData : {
-          date : base64String,
+          data : base64String,
           mimeType : file.type,
         },
       
@@ -184,5 +186,104 @@ export async function scanReceipt(file)
   {
     console.error("Error scanning receipt:", error.message);
     throw new Error("Failed to scan receipt");
+  }
+}
+
+export async function getTransaction(id)
+{
+  const {userId} = await auth();
+  if(!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where : {clerkUserId: userId},
+  });
+
+  if(!user) throw new Error("User not found");
+
+  const transaction = await db.transaction.findUnique({
+    where : {
+      id,
+      userId : user.id,
+    },
+  });
+  if(!transaction)
+    throw new Error("transaction not found");
+
+  return serializeAmount(transaction);
+}
+
+export async function updateTransaction(id, data)
+{
+  try 
+  {
+    const {userId} = await auth();
+    if(!userId) throw new Error("Unauthorized");
+
+    const user = await db.user.findUnique({
+      where : { clerkUserId : userId},
+    });
+
+    if(!user) throw new Error("User not found");
+
+    //Get original transaction to calculate balance change
+
+    const originalTransaction = await db.transaction.findUnique({
+      where : {
+        id, 
+        userId : user.id,
+      },
+      include : {
+        account : true,
+      },
+    });
+
+    if(!originalTransaction) throw new Error("Transaction not found");
+    //Calculate balance changes
+
+    const oldBalanceChange = 
+      originalTransaction.type === "EXPENSE"
+      ? -originalTransaction.amount.toNumber()
+      : originalTransaction.amount.toNumber();
+    
+    const newBalanceChange = 
+      data.type === "EXPENSE" ? -data.amount : data.amount;
+
+    const netBalanceChange = newBalanceChange - oldBalanceChange;
+
+    //Update transaction and account balance in a transaction
+    const transaction = await db.$transaction(async (tx) => {
+      const updated = await tx.transaction.update({
+        where : {
+          id,
+          userId : user.id,
+        },
+        data : {
+          ...data,
+          nextRecurringDate:
+              data.isReccuring && data.reccuringInterval
+              ? calculatenextRecurringDate(data.date, data.reccuringInterval)
+              : null,
+        } ,
+      });
+
+      //Update account balance
+      await tx.account.update ({
+        where : {id : data.accountId},
+        data : {
+          balance : {
+            increment : netBalanceChange,
+          },
+        },
+      });
+      return updated;
+    });
+  revalidatePath("/dashboard");
+  revalidatePath(`account/${data.accountId}`);
+
+  return {successs : true, data : serializeAmount(transaction)};
+
+  } catch (error)
+  {
+    throw new Error(error.message);
   }
 }
