@@ -32,6 +32,11 @@ const [sortConfig, setSortConfig] = useState({
         direction : "desc",
 });
 
+const [page, setPage] = useState(1);
+const SetselectedPage = (selectedPage) => {
+  if(0 < selectedPage && selectedPage <= Math.ceil(filteredAndSortedTransactions.length/20 ))
+    setPage(selectedPage);
+}
 const [searchTerm, setSearchTerm] = useState("");
 const [typeFilter, setTypeFilter] = useState("");
 const [recurringFilter, setRecurringFilter] = useState("");
@@ -253,10 +258,13 @@ const handleClearFilters = () =>
                 </TableCell>
               </TableRow>
             ):(
-              filteredAndSortedTransactions.map((transactions)=>(
+
+              filteredAndSortedTransactions.slice(page * 10 - 10, page*10).map((transactions)=>(
                 <TableRow key = {transactions.id}>
-                <TableCell><Checkbox onCheckedChange = {() =>handleSelect(transactions.id)}
-                checked = {selectedIds.includes(transactions.id)}
+                <TableCell>
+                  <Checkbox 
+                    onCheckedChange = {() =>handleSelect(transactions.id)}
+                    checked = {selectedIds.includes(transactions.id)}
                 /></TableCell>
                 <TableCell>{format(new Date(transactions.date), "PP")}</TableCell>
                 <TableCell>{transactions.description}</TableCell>
@@ -330,6 +338,25 @@ const handleClearFilters = () =>
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className='mx-auto'>
+        {filteredAndSortedTransactions.length > 0 && 
+          <div className='p-10 m-10 flex justify-center item-center gap-4 flex-wrap sm:flex-row'>
+          {
+            page != 1 &&
+          <span className='px-2 cursor-pointer' onClick={() => SetselectedPage(page-1)}>◀️</span>
+          }
+          {
+              [...Array(Math.ceil(filteredAndSortedTransactions.length/20))].map((_, i)=>{
+                return <span onClick={() => SetselectedPage(i+1)} className='cursor-pointer' key = {i}>{i+1}</span>
+              })
+          }
+          {page !== Math.ceil(filteredAndSortedTransactions.length/20) &&
+            
+           <span className='px-2 cursor-pointer' onClick={() => SetselectedPage(page+1)}>▶️</span>
+          }
+          </div>
+        }
       </div>
     </div>
   )

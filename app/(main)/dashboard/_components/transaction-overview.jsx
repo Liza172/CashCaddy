@@ -184,7 +184,7 @@ export function DashboardOverview({ accounts, transactions }) {
                       borderRadius: "var(--radius)",
                     }}
                   />
-                  <Legend />
+                  <Legendf />
                 </PieChart>
               </ResponsiveContainer>
             </div>
