@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
           {/*Footer*/}
           <footer className="bg-blue-50">
             <div className="container mx-auto px-4 text-center text-grey-600">
-            <p>This is Liza.</p> 
+            <p className="py-2">Made by Liza 🩷</p> 
             </div>
           </footer>
         </body>

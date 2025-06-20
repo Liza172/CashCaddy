@@ -18,11 +18,10 @@ const BudgetProgress = ({initialBudget, currentExpenses} ) => {
   const [newBudget, setNewBudget] = useState(
     initialBudget?.amount?.toString() || ""
   );
-  const percentUsed = Number(initialBudget.amount)
-  ? (Number(currentExpenses) / Number(initialBudget.amount))*100
+  const percentUsed = Number(initialBudget?.amount)
+  ? (Number(currentExpenses) / Number(initialBudget?.amount))*100
   : 0;
 
-  console.log(percentUsed);
   
 
   const {
