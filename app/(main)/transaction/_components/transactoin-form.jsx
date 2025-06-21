@@ -30,7 +30,6 @@ const AddTransactionForm = ({
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
 
-  console.log(initialData);
   
 
   const {register, setValue, handleSubmit, formState:{errors}, watch, getValues, reset} = useForm({
